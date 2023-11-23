@@ -53,19 +53,6 @@ class Model ():
         
         return norm.pdf(self.M, loc=self.mu, scale=self.mu)
     
-    # def norm_sig(self):
-    #     '''
-    #     Normalisation factor for the signal
-    #     '''
-        
-    #     return 1./(norm.cdf(self.beta, loc=self.mu, scale=self.sigma) - norm.cdf(self.alpha, loc=self.mu, scale=self.sigma))
-    
-    # def norm_bkg(self):
-    #     '''
-    #     Normalisation factor for the backgrouund
-    #     '''
-        
-    #     return 1./(expon.cdf(self.beta, scale=1./self.lamda) - expon.cdf(self.alpha, scale=1./self.lamda))
     
     def norm_factors(self):
         '''
