@@ -10,6 +10,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 from scipy.stats import truncnorm, truncexpon
+import argparse
 
 plt.style.use('../mphil.mplstyle')
 
@@ -108,22 +109,37 @@ class Model ():
 
 def main():
     
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-a', '--alpha', help='Value of lower limit of distribution', type=float, default=5., required=False)
+    parser.add_argument('-b', '--beta', help='Value of the upper limit of the distribution', type=float, default=5.6, required=False)
+    parser.add_argument('-n', '--nentries', help='Number of models to be tested', type=int, required=False, default=1000)
+    args = parser.parse_args()
+    
+    if args.alpha >= args.beta:
+        print('Error! alpha must be smaller than beta. Exiting the code!')
+        exit(4)
+    
     print("Executing exercise c)")
     print("=======================================")
     
     print("Testing to see if pdf is normalised")
     print("=======================================")
     
-    n_entries = int(input("Select number of points to generate: "))
+    n_entries = args.nentries
     
-    my_alpha = 0
-    my_beta = 10
+    print('Now testing {} models'.format(n_entries))
+    print("=======================================")
+    
+    my_alpha = args.alpha
+    my_beta = args.beta
         
-    x = np.linspace(my_alpha, my_beta, n_entries) # select n_entries points in the selected range   
+    x = np.linspace(my_alpha, my_beta, n_entries) # select n_entries points in the selected range  
+    
+    np.random.seed(4999) # random seed to have always same results, chosen as my birthday 
     
     f_values = np.random.random(n_entries)
     lamda_values = np.random.uniform(0, 1, n_entries)
-    mu_values = np.random.uniform(5, 5.1, n_entries)
+    mu_values = np.random.uniform(1, 10, n_entries)
     sigma_values = np.random.uniform(0.1, 1.1, n_entries)
     
     my_model = []
@@ -131,21 +147,31 @@ def main():
     for i in range(n_entries):
         my_model.append(Model(M=x, f=f_values[i], lamda=lamda_values[i], mu=mu_values[i], sigma=sigma_values[i], alpha=my_alpha, beta=my_beta, is_normalised=True))
     
-    # plt.figure()
-    # for i in range(n_entries):
-    #     plt.plot(x, my_model[i].pdf())
     
-    # plt.show()
     
     integral = []
     
-    
+    if n_entries < 50: # For more than 50 entries the plot is too messy and it takes a long time to open
+        plt.figure(figsize=(15,10))
+        print('Showing plot with all the distributions')
+        print("=======================================")
     
     for i in range(n_entries):
         integral.append(np.trapz(my_model[i].pdf(), x)) 
         
-    print(np.mean(integral))
-    print(np.var(integral))
+        if n_entries < 50: 
+            plt.plot(x, my_model[i].pdf())            
+            plt.xlabel('M')
+            plt.ylabel('pdf(M)')
+        
+    print('Mean of {0} different models: {1} +- {2}'.format(n_entries, np.mean(integral), np.var(integral)))
+    
+    if n_entries < 50:
+        plt.title('{0} different models for the pdf. Mean = {1}'.format(n_entries, np.mean(integral)))
+        plt.savefig('../plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
+        print("=======================================")
+        plt.show()
+        print('Saving pdf file at ../plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
 
 
 if __name__ == "__main__":
@@ -153,3 +179,6 @@ if __name__ == "__main__":
     print("Initialising coursework")
     print("=======================================")
     main()
+    print("=======================================")
+    print("Code finished. Exiting!")
+    print("=======================================")
