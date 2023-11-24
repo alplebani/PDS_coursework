@@ -155,7 +155,7 @@ def main():
     
     if n_entries < 50:
         plt.title('{0} different models for the pdf. Mean = {1}'.format(n_entries, np.mean(integral)))
-        plt.savefig('../plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
+        plt.savefig('plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
         print("=======================================")
         plt.show()
         print('Saving pdf file at ../plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
