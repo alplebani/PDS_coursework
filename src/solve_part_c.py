@@ -12,7 +12,7 @@ from scipy.integrate import cumulative_trapezoid
 from scipy.stats import truncnorm, truncexpon
 import argparse
 
-plt.style.use('../mphil.mplstyle')
+plt.style.use('mphil.mplstyle')
 
 
 # ===============================================
@@ -51,29 +51,52 @@ class Model ():
         Distribution of the signal model
         '''
         
-        return norm.pdf(self.M, loc=self.mu, scale=self.mu)
+        return norm.pdf(self.M, loc=self.mu, scale=self.sigma)
     
+    def N_S(self):
+        '''
+        Normalisation factor of the signal
+        '''
+        
+        return np.trapz(self.signal(), self.M)
+    
+    def N_B(self):
+        '''
+        Normalisation factor of the background
+        '''
+        
+        return np.trapz(self.background(), self.M)
     
     def norm_factors(self):
         '''
         Function that returns the normalisation factors for signal and background pdfs
         '''
-
-        Norm_bkg = np.trapz(self.background(), self.M) # normalisation factor for the signal
-        Norm_sig = np.trapz(self.signal(), self.M) # normalisation factor for the background
         
-        return Norm_sig, Norm_bkg
+        return self.N_S(), self.N_B()
+    
+    def pdf_signal(self):
+        '''
+        Normalised distribution of the signal
+        '''
+        
+        return self.signal()/self.N_S()
+    
+    def pdf_background(self):
+        '''
+        Normalised distribution of the background
+        '''
+        
+        return self.background()/self.N_B()
 
 
     def pdf(self):
         '''
         Function that returns the probability distribution function, with flag to have it normalised or not
         '''
-        
-        N_sig, N_bkg = self.norm_factors()
+
 
         if self.is_normalised:
-            return (self.f * self.signal() / N_sig) + ((1 - self.f) * self.background() / N_bkg)
+            return (self.f * self.signal() / self.N_S()) + ((1 - self.f) * self.background() / self.N_B())
         else:
             return self.f * self.signal() + (1 - self.f) * self.background()
         
@@ -125,9 +148,9 @@ def main():
     np.random.seed(4999) # random seed to have always same results, chosen as my birthday 
     
     f_values = np.random.random(n_entries)
-    lamda_values = np.random.uniform(0, 1, n_entries)
-    mu_values = np.random.uniform(1, 10, n_entries)
-    sigma_values = np.random.uniform(0.1, 1.1, n_entries)
+    lamda_values = np.random.uniform(0.1, 1, n_entries)
+    mu_values = np.random.uniform(my_alpha, my_beta, n_entries)
+    sigma_values = np.random.uniform(0.01, 1, n_entries)
     
     my_model = []
     
@@ -160,6 +183,22 @@ def main():
         plt.show()
         print('Saving pdf file at ../plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
 
+    print("=======================================")
+    print('Part c finished, moving on to part c now...')
+    print("Executing exercise d)")
+    print("=======================================")
+    
+    # print("Plotting true distributions")
+    # print("=======================================")
+    
+    # x = np.linspace(5, 5.6, 1000)
+    # true_model = Model(M=x, f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    
+    # plt.figure(figsize=(15,10))
+    # plt.plot(x, norm.pdf(x, loc=5.28, scale=0.018), label='signal')
+    # plt.plot(x, true_model.signal(), label='background')
+    # plt.legend()
+    # plt.show()
 
 if __name__ == "__main__":
     print("=======================================")
