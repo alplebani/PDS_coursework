@@ -188,17 +188,23 @@ def main():
     print("Executing exercise d)")
     print("=======================================")
     
-    # print("Plotting true distributions")
-    # print("=======================================")
+    print("Plotting true distributions")
+    print("=======================================")
     
-    # x = np.linspace(5, 5.6, 1000)
-    # true_model = Model(M=x, f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    x = np.linspace(5, 5.6, 1000)
+    true_model = Model(M=x, f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
     
-    # plt.figure(figsize=(15,10))
-    # plt.plot(x, norm.pdf(x, loc=5.28, scale=0.018), label='signal')
-    # plt.plot(x, true_model.signal(), label='background')
-    # plt.legend()
-    # plt.show()
+    plt.figure(figsize=(15,10))
+    plt.plot(x, true_model.signal(), label='Signal', c='r', ls='--')
+    plt.plot(x, true_model.background(), label='Background', c='b', ls='-.')
+    plt.plot(x, true_model.pdf(), label='Signal+background', color='green')
+    plt.xlabel('M')
+    plt.ylabel('PDF(M)')
+    plt.title('True PDF')
+    plt.legend()
+    plt.savefig('plots/true_pdf.pdf')
+    plt.show()
+    
 
 if __name__ == "__main__":
     print("=======================================")
