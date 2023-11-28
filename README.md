@@ -31,4 +31,11 @@ The code will then generate n_entries models, selecting n_entries random values 
 Aftwerwards, the code will numerically evaluate the integral of the pdf in the $[\alpha,\beta]$ range, and then return the mean and the standard deviation of the n_entries integrals of the pdfs. These two values are then printed out, and then the code is exited.
 
 
+# Exercise d
+
+The code for this exercise can be found in [src/solve_part_c.py](https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/s1_assessment/ap2387/-/blob/main/src/solve_part_c.py). This code simply plots the true distributions of signal, background and of the combined pdf on the same canva, fixing the values of $\vect{\theta}$. The plot generated can be found in ```plots\true_pdf.pdf```
+
+# Exercise e
+
+The code for this exercise can be found in [src/solve_part_c.py](https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/s1_assessment/ap2387/-/blob/main/src/solve_part_c.py). For this part, an additional option can be passed using ```-p, --points```, which specifies how many points the user wants to generate, with this number set by default at 100000.
 
