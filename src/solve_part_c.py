@@ -2,6 +2,7 @@
 import scipy
 from math import log
 from scipy.integrate import simpson
+from scipy.special import erf
 from scipy.optimize import minimize
 from scipy.stats import norm, expon
 from functools import partial
@@ -11,6 +12,10 @@ from matplotlib import pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 from scipy.stats import truncnorm, truncexpon
 import argparse
+from scipy.stats.sampling import NumericalInversePolynomial as NIP
+import itertools
+from iminuit.cost import UnbinnedNLL
+from iminuit import Minuit
 
 plt.style.use('mphil.mplstyle')
 
@@ -23,8 +28,7 @@ class Model ():
     '''
     Statistical model. Contains all functions needed to run the code
     '''
-    def __init__(self, M, f, lamda, sigma, mu, alpha, beta, is_normalised):
-        self.M = M
+    def __init__(self, f, lamda, sigma, mu, alpha, beta, is_normalised):
         self.f = f
         self.lamda = lamda
         self.sigma = sigma
@@ -38,84 +42,93 @@ class Model ():
             self.beta = beta
         self.is_normalised = is_normalised
     
-    def background(self):
+    def background(self, x):
         '''
         Distribution of the background model
         '''
         
-        return expon.pdf(self.M, scale=1./self.lamda)
+        return expon.pdf(x, scale=1./self.lamda)
 
 
-    def signal(self):
+    def signal(self, x):
         '''
         Distribution of the signal model
         '''
         
-        return norm.pdf(self.M, loc=self.mu, scale=self.sigma)
+        return norm.pdf(x, loc=self.mu, scale=self.sigma)
     
-    def N_S(self):
+    def N_S(self, x):
         '''
         Normalisation factor of the signal
         '''
         
-        return np.trapz(self.signal(), self.M)
+        return np.trapz(self.signal(x), x)
     
-    def N_B(self):
+    def N_B(self, x):
         '''
         Normalisation factor of the background
         '''
         
-        return np.trapz(self.background(), self.M)
+        return np.trapz(self.background(x), x)
     
-    def norm_factors(self):
+    def norm_factors(self, x):
         '''
         Function that returns the normalisation factors for signal and background pdfs
         '''
         
-        return self.N_S(), self.N_B()
+        return self.N_S(x), self.N_B(x)
     
-    def pdf_signal(self):
+    def pdf_signal(self, x):
         '''
         Normalised distribution of the signal
         '''
         
-        return self.signal()/self.N_S()
+        return self.signal(x)/self.N_S(x)
     
-    def pdf_background(self):
+    def pdf_background(self, x):
         '''
         Normalised distribution of the background
         '''
         
-        return self.background()/self.N_B()
+        return self.background(x)/self.N_B(x)
 
-
-    def pdf(self):
+    def pdf(self, x):
         '''
-        Function that returns the probability distribution function, with flag to have it normalised or not
+        Function that returns the probability distribution function
         '''
-
 
         if self.is_normalised:
-            return (self.f * self.signal() / self.N_S()) + ((1 - self.f) * self.background() / self.N_B())
+            return (self.f * self.signal(x) / self.N_S(x)) + ((1 - self.f) * self.background(x) / self.N_B(x))
         else:
-            return self.f * self.signal() + (1 - self.f) * self.background()
+            return self.f * self.signal(x) + (1 - self.f) * self.background(x)
         
-    def cdf(self):
+    def cdf(self, x):
         '''
-        Function that returns the cumulative distribution function for the pdf
+        Function that returns the cumulative distribution function
         '''
         
-        return cumulative_trapezoid(self.pdf(), self.M, initial=self.alpha) # integral of the cdf from alpha 
+        bkg = - np.exp(- self.lamda * self.alpha) + np.exp(- self.lamda * x)
+        sig = 0.5 * (erf((x - self.mu)/(np.sqrt(2) * self.sigma)) - erf((self.alpha - self.mu)/(np.sqrt(2) * self.sigma)))
         
+        return self.f * sig / self.N_S(x) + (1 - self.f) * bkg / self.N_B(x)
     
+    def accept_reject(self, size):
+        '''
+        Function used to generate data according to the pdf using the accept/reject method
+        '''
         
-
-
-
-
-
+        a = np.random.uniform(0, 1, size)
+        x = np.linspace(self.alpha, self.beta, size)
+        pdf = self.pdf(x)
+        return x[np.where(a < pdf / np.max(pdf))[0][:size]]
     
-
+    # def log_likelihood(self, x, f, ):
+    #     '''
+    #     Function that returns the minus log-likelihood for the model
+    #     '''
+        
+    #     return UnbinnedNLL(x, self.pdf(x))
+    
 
 def main():
     
@@ -123,6 +136,7 @@ def main():
     parser.add_argument('-a', '--alpha', help='Value of lower limit of distribution', type=float, default=5., required=False)
     parser.add_argument('-b', '--beta', help='Value of the upper limit of the distribution', type=float, default=5.6, required=False)
     parser.add_argument('-n', '--nentries', help='Number of models to be tested', type=int, required=False, default=1000)
+    parser.add_argument('-p', '--points', help="Number of points you  want to generate", type=int, required=False, default=100000)
     args = parser.parse_args()
     
     if args.alpha >= args.beta:
@@ -155,9 +169,7 @@ def main():
     my_model = []
     
     for i in range(n_entries):
-        my_model.append(Model(M=x, f=f_values[i], lamda=lamda_values[i], mu=mu_values[i], sigma=sigma_values[i], alpha=my_alpha, beta=my_beta, is_normalised=True))
-    
-    
+        my_model.append(Model(f=f_values[i], lamda=lamda_values[i], mu=mu_values[i], sigma=sigma_values[i], alpha=my_alpha, beta=my_beta, is_normalised=True))
     
     integral = []
     
@@ -167,10 +179,10 @@ def main():
         print("=======================================")
     
     for i in range(n_entries):
-        integral.append(np.trapz(my_model[i].pdf(), x)) 
+        integral.append(np.trapz(my_model[i].pdf(x), x)) 
         
         if n_entries < 50: 
-            plt.plot(x, my_model[i].pdf())            
+            plt.plot(x, my_model[i].pdf(x))            
             plt.xlabel('M')
             plt.ylabel('pdf(M)')
         
@@ -184,26 +196,52 @@ def main():
         print('Saving pdf file at ../plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
 
     print("=======================================")
-    print('Part c finished, moving on to part c now...')
+    print('Part c finished, moving on to part d now...')
     print("Executing exercise d)")
     print("=======================================")
     
     print("Plotting true distributions")
     print("=======================================")
     
-    x = np.linspace(5, 5.6, 1000)
-    true_model = Model(M=x, f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    x = np.linspace(5., 5.6, 1000)
+    true_model = Model(f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
     
     plt.figure(figsize=(15,10))
-    plt.plot(x, true_model.signal(), label='Signal', c='r', ls='--')
-    plt.plot(x, true_model.background(), label='Background', c='b', ls='-.')
-    plt.plot(x, true_model.pdf(), label='Signal+background', color='green')
+    plt.plot(x, true_model.signal(x), label='Signal', c='r', ls='--')
+    plt.plot(x, true_model.background(x), label='Background', c='b', ls='-.')
+    plt.plot(x, true_model.pdf(x), label='Signal+background', color='green')
     plt.xlabel('M')
     plt.ylabel('PDF(M)')
     plt.title('True PDF')
     plt.legend()
     plt.savefig('plots/true_pdf.pdf')
+    # plt.show()
+    
+    print('Part d finished, moving on to part e now...')
+    print("Executing exercise e)")
+    print("=======================================")
+    print('Generating sample')
+    
+    entries = args.points
+
+    x = np.linspace(my_alpha, my_beta, entries)
+    
+    true_model = Model(f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    
+    data = true_model.accept_reject(size=entries)
+    
+    plt.figure(figsize=(15,10))
+    plt.hist(data, bins=100,range=(args.alpha, args.beta), density=True, label='Data')
+    plt.plot(x, true_model.pdf(x), label='True pdf')
+    plt.legend()
+    plt.xlabel('M')
+    plt.ylabel('PDF(M)')
+    plt.title('High-statistics sample with {} events'.format(entries))
+    plt.savefig('plots/part_e.pdf')
     plt.show()
+    
+    # mi = Minuit(true_model.log_likelihood(x), f=0.1, )
+    
     
 
 if __name__ == "__main__":
