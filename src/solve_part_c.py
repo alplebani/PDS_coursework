@@ -257,7 +257,6 @@ def main():
     mi = Minuit(nLL, mu=5.28, f=0.1, lamda=0.5, sigma=0.018)
     mi.migrad()
     print(mi)
-    print(*mi.values)
     
     hat_f, hat_mu, hat_lamda, hat_sigma = mi.values
     
