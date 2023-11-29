@@ -14,7 +14,7 @@ from scipy.stats import truncnorm, truncexpon
 import argparse
 from scipy.stats.sampling import NumericalInversePolynomial as NIP
 import itertools
-from iminuit.cost import UnbinnedNLL
+from iminuit.cost import BinnedNLL, UnbinnedNLL
 from iminuit import Minuit
 
 plt.style.use('mphil.mplstyle')
@@ -128,7 +128,7 @@ class Model ():
     #     '''
         
     #     return UnbinnedNLL(x, self.pdf(x))
-    
+
 
 def main():
     
@@ -193,7 +193,7 @@ def main():
         plt.savefig('plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
         print("=======================================")
         plt.show()
-        print('Saving pdf file at ../plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
+        print('Saving pdf file at plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
 
     print("=======================================")
     print('Part c finished, moving on to part d now...')
@@ -215,6 +215,8 @@ def main():
     plt.title('True PDF')
     plt.legend()
     plt.savefig('plots/true_pdf.pdf')
+    print("=======================================")
+    print('Saving pdf file at plots/true_pdf.pdf')
     # plt.show()
     
     print('Part d finished, moving on to part e now...')
@@ -238,9 +240,48 @@ def main():
     plt.ylabel('PDF(M)')
     plt.title('High-statistics sample with {} events'.format(entries))
     plt.savefig('plots/part_e.pdf')
+    print("=======================================")
+    print('Saving pdf file at plots/part_e.pdf')
+    # plt.show()    
+    
+    def pdf(x, f, mu, lamda, sigma):
+        '''
+        Function that returns the pdf of the model
+        '''
+        
+        model = Model(f=f, mu=mu, lamda=lamda, sigma=sigma, alpha=5., beta=5.6, is_normalised=True)
+        
+        return model.pdf(x)
+    
+    nLL = UnbinnedNLL(data, pdf)
+    mi = Minuit(nLL, mu=5.28, f=0.1, lamda=0.5, sigma=0.018)
+    mi.migrad()
+    print(mi)
+    print(*mi.values)
+    
+    hat_f, hat_mu, hat_lamda, hat_sigma = mi.values
+    
+    plt.figure(figsize=(15,10))
+    plt.hist(data, bins=100, density=True)
+    plt.plot(x, true_model.pdf(x), label='True model')
+    fit_model = Model(f=hat_f, mu=hat_mu, sigma=hat_sigma, lamda=hat_lamda, alpha=my_alpha, beta=my_beta, is_normalised=True)
+    plt.plot(x, fit_model.pdf(x), label='Fit model', color='green')
+    plt.plot(x, fit_model.signal(x)/5., label='Fit signal / 5.', c='r', ls='--')
+    plt.plot(x, fit_model.background(x), label='Fit background', c='b', ls='-.')
+    plt.title('Post-fit distribution')
+    plt.xlabel('M')
+    plt.ylabel('PDF(M)')
+    plt.legend()
+    plt.savefig("plots/fit_e.pdf")
+    print("=======================================")
+    print('Saving pdf file at plots/fit_e.pdf')
     plt.show()
     
-    # mi = Minuit(true_model.log_likelihood(x), f=0.1, )
+    print("=======================================")
+    print('Part e finished, moving on to part f now...')
+    print("Executing exercise f)")
+    print("=======================================")
+    
     
     
 
