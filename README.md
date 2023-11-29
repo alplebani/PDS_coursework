@@ -41,3 +41,6 @@ The code for this exercise can be found in [src/solve_part_c.py](https://gitlab.
 
 This code generated p points according to the pdf of the Model, and then performs a ML fit in order to estimate the parameters $\mathbf{\theta}$. The code uses the ```minuit``` package, and after the minimisation of the NLL, it prints out the best values of the parameters with their uncertainties, as well as the Hessian matrix for the parameters. The code also plots the generated data alongside the true model in ```plots/part_e.pdf``` and the best-fit model in ```plots/fit_e.pdf```.
 
+# TO_DO
+
+Fix background distribution

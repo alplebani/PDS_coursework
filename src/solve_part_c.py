@@ -16,6 +16,7 @@ from scipy.stats.sampling import NumericalInversePolynomial as NIP
 import itertools
 from iminuit.cost import BinnedNLL, UnbinnedNLL
 from iminuit import Minuit
+import time
 
 plt.style.use('mphil.mplstyle')
 
@@ -62,7 +63,10 @@ class Model ():
         Normalisation factor of the signal
         '''
         
-        return np.trapz(self.signal(x), x)
+        if self.f != 0:
+            return np.trapz(self.signal(x), x) # to avoid scenarios where we don't have a signal distribution
+        else:
+            return 1
     
     def N_B(self, x):
         '''
@@ -90,7 +94,7 @@ class Model ():
         Normalised distribution of the background
         '''
         
-        return self.background(x)/self.N_B(x)
+        return (1 - self.f) * self.background(x)/self.N_B(x)
 
     def pdf(self, x):
         '''
@@ -121,13 +125,6 @@ class Model ():
         x = np.linspace(self.alpha, self.beta, size)
         pdf = self.pdf(x)
         return x[np.where(a < pdf / np.max(pdf))[0][:size]]
-    
-    # def log_likelihood(self, x, f, ):
-    #     '''
-    #     Function that returns the minus log-likelihood for the model
-    #     '''
-        
-    #     return UnbinnedNLL(x, self.pdf(x))
 
 
 def main():
@@ -204,7 +201,7 @@ def main():
     print("=======================================")
     
     x = np.linspace(5., 5.6, 1000)
-    true_model = Model(f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    true_model = Model(f=0, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
     
     plt.figure(figsize=(15,10))
     plt.plot(x, true_model.signal(x), label='Signal', c='r', ls='--')
@@ -217,7 +214,9 @@ def main():
     plt.savefig('plots/true_pdf.pdf')
     print("=======================================")
     print('Saving pdf file at plots/true_pdf.pdf')
-    # plt.show()
+    plt.show()
+    
+    exit(0)
     
     print('Part d finished, moving on to part e now...')
     print("Executing exercise e)")
@@ -274,13 +273,31 @@ def main():
     plt.savefig("plots/fit_e.pdf")
     print("=======================================")
     print('Saving pdf file at plots/fit_e.pdf')
-    plt.show()
+    # plt.show()
     
     print("=======================================")
     print('Part e finished, moving on to part f now...')
     print("Executing exercise f)")
     print("=======================================")
     
+    
+    nLL = UnbinnedNLL(data, pdf)
+    mi = Minuit(nLL, mu=5.28, f=0, lamda=0.5, sigma=0.018)
+    mi.values['f'] = 0
+    mi.fixed['f'] = True
+    
+    mi.migrad()
+    mi.hesse()
+    print(*mi.values)
+    hat_f, hat_mu, hat_lamda, hat_sigma = mi.values
+    plt.figure()
+    plt.hist(data, bins=100, density=True)
+    plt.plot(x, true_model.pdf(x), label='True model')
+    fit_model = Model(f=hat_f, mu=hat_mu, sigma=hat_sigma, lamda=hat_lamda, alpha=my_alpha, beta=my_beta, is_normalised=True)
+    plt.plot(x, fit_model.pdf(x), label='Fit model', color='green')
+    plt.plot(x, fit_model.background(x), label='Fit background', c='b', ls='-.')
+    plt.legend()
+    plt.show()
     
     
 
