@@ -27,17 +27,17 @@ python src/solve_part_c.py -h
 
 The available options are ```-a, --alpha```, ```-b, --beta``` and ```-n, --nentries```, which allow to change the interval range $[\alpha,\beta]$ and the number of models to be tested. The default options are $\alpha=5$, $\beta=5.6$ and n_entries = 1000.
 
-The code will then generate n_entries models, selecting n_entries random values for the parameters $\vec{\theta}$, uniformly distributed in a selected range. If the number of models is smaller than 50, the code will also produce a plot displaying the pdfs of all the models. This plot is then saved in the ```plots\``` folder, under the name ```PartC_alpha_beta_n_entries.pdf```. The upper limit of 50 was selected because for greater values the plot is too messy and it takes too long to open.
+The code will then generate n_entries models, selecting n_entries random values for the parameters $\mathbf{\theta}$, uniformly distributed in a selected range. If the number of models is smaller than 50, the code will also produce a plot displaying the pdfs of all the models. This plot is then saved in the ```plots/``` folder, under the name ```PartC_alpha_beta_n_entries.pdf```. The upper limit of 50 was selected because for greater values the plot is too messy and it takes too long to open.
 Aftwerwards, the code will numerically evaluate the integral of the pdf in the $[\alpha,\beta]$ range, and then return the mean and the standard deviation of the n_entries integrals of the pdfs. These two values are then printed out, and then the code is exited.
 
 
 # Exercise d
 
-The code for this exercise can be found in [src/solve_part_c.py](https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/s1_assessment/ap2387/-/blob/main/src/solve_part_c.py). This code simply plots the true distributions of signal, background and of the combined pdf on the same canva, fixing the values of $\vec{\theta}$. The plot generated can be found in ```plots\true_pdf.pdf```
+The code for this exercise can be found in [src/solve_part_c.py](https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/s1_assessment/ap2387/-/blob/main/src/solve_part_c.py). This code simply plots the true distributions of signal, background and of the combined pdf on the same canva, fixing the values of $\mathbf{\theta}$. The plot generated can be found in ```plots/true_pdf.pdf```
 
 # Exercise e
 
 The code for this exercise can be found in [src/solve_part_c.py](https://gitlab.developers.cam.ac.uk/phy/data-intensive-science-mphil/s1_assessment/ap2387/-/blob/main/src/solve_part_c.py). For this part, an additional option can be passed using ```-p, --points```, which specifies how many points the user wants to generate, with this number set by default at 100000.
 
-This code generated p points according to the pdf of the Model, and then performs a ML fit in order to estimate the parameters $\vec{\theta}$. The code uses the ```minuit``` package, and after the minimisation of the NLL, it prints out the best values of the parameters with their uncertainties, as well as the Hessian matrix for the parameters. The code also plots the generated data alongside the true model in ```plots/part_e.pdf``` and the best-fit model in ```plots/fit_e.pdf```.
+This code generated p points according to the pdf of the Model, and then performs a ML fit in order to estimate the parameters $\mathbf{\theta}$. The code uses the ```minuit``` package, and after the minimisation of the NLL, it prints out the best values of the parameters with their uncertainties, as well as the Hessian matrix for the parameters. The code also plots the generated data alongside the true model in ```plots/part_e.pdf``` and the best-fit model in ```plots/fit_e.pdf```.
 
