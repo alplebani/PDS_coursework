@@ -175,7 +175,7 @@ def main():
         print("=======================================")
     
     for i in range(n_entries):
-        integral.append(np.trapz(my_model[i].pdf_background(x), x)) 
+        integral.append(np.trapz(my_model[i].pdf(x), x)) 
         
         if n_entries < 50: 
             plt.plot(x, my_model[i].pdf(x))            
@@ -312,6 +312,8 @@ def main():
     N_datasets = 1000
     
     discovery_rates = []
+    
+    print(args.fit)
 
     if args.fit:
         for mod in number_of_models:
@@ -358,8 +360,9 @@ def main():
             disc_rate = float(len(val_sig))/(float(len(significances)))
             discovery_rates.append(disc_rate)
         
-        else:
-            discovery_rates = np.load("data/discovery_rates.npy")
+    else:
+        discovery_rates = np.load("data/discovery_rates.npy")
+            
     plt.figure(figsize=(15,10))   
     plt.scatter(number_of_models, discovery_rates)
     plt.axhline(y=0.9, c='r', ls='--')
