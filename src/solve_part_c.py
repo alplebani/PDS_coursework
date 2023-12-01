@@ -226,7 +226,7 @@ def main():
 
     x = np.linspace(my_alpha, my_beta, entries)
     
-    true_model = Model(f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    true_model = Model(f=0.1, lamda=0.5, mu=5.28, sigma=0.018)
     
     data = true_model.accept_reject(size=entries)
     
