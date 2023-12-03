@@ -17,10 +17,9 @@ import itertools
 from iminuit.cost import BinnedNLL, UnbinnedNLL
 from iminuit import Minuit
 import time
-from Helpers.HelperFunctions import Model, New_Model, pdf, pdf_new_model
+from Helpers.HelperFunctions import Model, pdf, bkg_pdf
 
 plt.style.use('mphil.mplstyle')
-  
 
 def main():
     
@@ -29,14 +28,14 @@ def main():
     parser.add_argument('-b', '--beta', help='Value of the upper limit of the distribution', type=float, default=5.6, required=False)
     parser.add_argument('-n', '--nentries', help='Number of models to be tested', type=int, required=False, default=1000)
     parser.add_argument('-p', '--points', help="Number of points you  want to generate", type=int, required=False, default=100000)
-    parser.add_argument('-f', '--fit', help='Flag whether you want to re-do the fits in part f) or if you just want to load the data', required=False, default=False, action='store_true')
+    parser.add_argument('-f', '--fit', help='Flag whether you want to re-do the fits in part f) or if you just want to load the data', action='store_true', required=False, default=False)
     args = parser.parse_args()
     
     if args.alpha >= args.beta:
         print('Error! alpha must be smaller than beta. Exiting the code!')
         exit(4)
     
-    print("Executing exercise g)")
+    print("Executing exercise c)")
     print("=======================================")
     
     print("Testing to see if pdf is normalised")
@@ -54,17 +53,15 @@ def main():
     
     np.random.seed(4999) # random seed to have always same results, chosen as my birthday 
     
-    f1_values = np.random.random(n_entries)
-    f2_values = np.random.random(n_entries)
+    f_values = np.random.random(n_entries)
     lamda_values = np.random.uniform(0.1, 1, n_entries)
-    mu1_values = np.random.uniform(my_alpha, my_beta, n_entries)
-    mu2_values = np.random.uniform(my_alpha, my_beta, n_entries)
+    mu_values = np.random.uniform(my_alpha, my_beta, n_entries)
     sigma_values = np.random.uniform(0.01, 1, n_entries)
     
     my_model = []
     
     for i in range(n_entries):
-        my_model.append(New_Model(f1=f1_values[i], f2=f2_values[i], lamda=lamda_values[i], mu_1=mu1_values[i], mu_2=mu2_values[i], sigma=sigma_values[i], alpha=my_alpha, beta=my_beta, is_normalised=True))
+        my_model.append(Model(f=f_values[i], lamda=lamda_values[i], mu=mu_values[i], sigma=sigma_values[i], alpha=my_alpha, beta=my_beta, is_normalised=True))
     
     integral = []
     
@@ -74,7 +71,7 @@ def main():
         print("=======================================")
     
     for i in range(n_entries):
-        integral.append(np.trapz(my_model[i].pdf_background(x), x)) 
+        integral.append(np.trapz(my_model[i].pdf(x), x)) 
         
         if n_entries < 50: 
             plt.plot(x, my_model[i].pdf(x))            
@@ -85,10 +82,10 @@ def main():
     
     if n_entries < 50:
         plt.title('{0} different models for the pdf. Mean = {1}'.format(n_entries, np.mean(integral)))
-        plt.savefig('plots/Part_g_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
+        plt.savefig('plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
         print("=======================================")
         plt.show()
-        print('Saving pdf file at plots/Part_g_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
+        print('Saving pdf file at plots/Part_c_{0}_{1}_{2}_entries.pdf'.format(my_alpha, my_beta, n_entries))
 
     print("=======================================")
     print('Part c finished, moving on to part d now...')
@@ -99,26 +96,21 @@ def main():
     print("=======================================")
     
     x = np.linspace(5., 5.6, 1000)
-    true_model = New_Model(f1=0.1, f2=0.05, lamda=0.5, mu_1=5.28, mu_2=5.35, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
-    s1_model = New_Model(f1=1, f2=0, lamda=0.5, mu_1=5.28, mu_2=5.35, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
-    s2_model = New_Model(f1=0, f2=1, lamda=0.5, mu_1=5.28, mu_2=5.35, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
-    bkg_model = New_Model(f1=0, f2=0, lamda=0.5, mu_1=5.28, mu_2=5.35, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
-    
-    
-
+    true_model = Model(f=0.1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    bkg_model = Model(f=0, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    sig_model = Model(f=1, lamda=0.5, mu=5.28, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
     
     plt.figure(figsize=(15,10))
-    plt.plot(x, s1_model.pdf(x)/10., label='S1', c='r', ls='--')
-    plt.plot(x, s2_model.pdf(x)/20., label='S2', c='orange', ls='--')
-    plt.plot(x, bkg_model.pdf(x)*0.85, label='Background', c='b', ls='-.')
+    plt.plot(x, sig_model.pdf(x)/10., label='Signal', c='r', ls='--')
+    plt.plot(x, bkg_model.pdf(x)*0.9, label='Background', c='b', ls='-.')
     plt.plot(x, true_model.pdf(x), label='Signal+background', color='green')
     plt.xlabel('M')
     plt.ylabel('PDF(M)')
     plt.title('True PDF')
     plt.legend()
-    plt.savefig('plots/part_g_true_pdf.pdf')
+    plt.savefig('plots/true_pdf.pdf')
     print("=======================================")
-    print('Saving pdf file at plots/part_g_true_pdf.pdf')
+    print('Saving pdf file at plots/true_pdf.pdf')
     plt.show()
     
     print('Part d finished, moving on to part e now...')
@@ -130,7 +122,7 @@ def main():
 
     x = np.linspace(my_alpha, my_beta, entries)
     
-    true_model = New_Model(f1=0.1, f2=0.05, lamda=0.5, mu_1=5.28, mu_2=5.35, sigma=0.018, alpha=5, beta=5.6, is_normalised=True)
+    true_model = Model(f=0.1, lamda=0.5, mu=5.28, sigma=0.018)
     
     data = true_model.accept_reject(size=entries)
     
@@ -141,66 +133,84 @@ def main():
     plt.xlabel('M')
     plt.ylabel('PDF(M)')
     plt.title('High-statistics sample with {} events'.format(entries))
-    plt.savefig('plots/part_g.pdf')
+    plt.savefig('plots/part_e.pdf')
     print("=======================================")
-    print('Saving pdf file at plots/part_g.pdf')
+    print('Saving pdf file at plots/part_e.pdf')
     plt.show()    
-    
 
-    nLL = UnbinnedNLL(data, pdf_new_model)
-    mi = Minuit(nLL, mu_1=5.28, mu_2=5.35, f1=0.1, f2=0.05, lamda=0.5, sigma=0.018)
+    nLL = UnbinnedNLL(data, pdf)
+    mi = Minuit(nLL, mu=5.28, f=0.1, lamda=0.5, sigma=0.018)
     mi.migrad()
-    print(mi)
     
-    hat_f1, hat_f2, hat_mu1, hat_mu2, hat_lamda, hat_sigma = mi.values
+    hat_f, hat_mu, hat_lamda, hat_sigma = mi.values
     
     plt.figure(figsize=(15,10))
     plt.hist(data, bins=100, density=True)
     plt.plot(x, true_model.pdf(x), label='True model')
-    fit_model = New_Model(f1=hat_f1, f2=hat_f2, mu_1=hat_mu1, mu_2=hat_mu2, sigma=hat_sigma, lamda=hat_lamda, alpha=my_alpha, beta=my_beta, is_normalised=True)
-    bkg_model = New_Model(f1=hat_f1, f2=0, mu_1=hat_mu1, mu_2=hat_mu2, sigma=hat_sigma, lamda=hat_lamda, alpha=my_alpha, beta=my_beta, is_normalised=True)
+    fit_model = Model(f=hat_f, mu=hat_mu, sigma=hat_sigma, lamda=hat_lamda, alpha=my_alpha, beta=my_beta, is_normalised=True)
+    bkg_model = Model(f=0, mu=hat_mu, sigma=hat_sigma, lamda=hat_lamda, alpha=my_alpha, beta=my_beta, is_normalised=True)
     plt.plot(x, fit_model.pdf(x), label='Fit model', color='green')
-    plt.plot(x, fit_model.signal_1(x)/10., label='Fit signal / 10.', c='r', ls='--')
-    plt.plot(x, fit_model.signal_2(x)/20., label='Fit signal / 10.', c='orange', ls='--')
-    plt.plot(x, bkg_model.pdf(x)*0.85, label='Fit background', c='b', ls='-.')
+    plt.plot(x, fit_model.signal(x)/10., label='Fit signal', c='r', ls='--')
+    plt.plot(x, bkg_model.pdf(x)*0.9, label='Fit background', c='b', ls='-.')
     plt.title('Post-fit distribution')
     plt.xlabel('M')
     plt.ylabel('PDF(M)')
     plt.legend()
-    plt.savefig("plots/fit_g.pdf")
+    plt.savefig("plots/fit_e.pdf")
     print("=======================================")
-    print('Saving pdf file at plots/fit_g.pdf')
+    print('Saving pdf file at plots/fit_e.pdf')
     plt.show()
     
     print("=======================================")
     print('Part e finished, moving on to part f now...')
     print("Executing exercise f)")
     print("=======================================")
+    print('Test: fit background only')
     
-    number_of_models = [2000, 3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 10000]
+    nLL = UnbinnedNLL(data, bkg_pdf)
+    mi = Minuit(nLL, lamda=0.4)
+    
+    mi.migrad()
+    mi.hesse()
+    hat_lamda = float(mi.values['lamda'])
+    plt.figure(figsize=(15,10))
+    plt.hist(data, bins=100, density=True)
+    plt.plot(x, true_model.pdf(x), label='True model')
+    bkg_model = Model(f=0, mu=5.28, sigma=0.018, lamda=hat_lamda)
+    plt.plot(x, bkg_model.pdf(x), label='Fit background', c='b', ls='-.')
+    plt.legend()
+    plt.show()
+    
+    print("=======================================")
+    print('Now moving on to part f)')
+    print("=======================================")
+    
+    number_of_models = [50, 100, 200, 500, 750, 1000, 1025, 1050, 1075, 1100, 1250, 1500, 1750, 2000]
     N_datasets = 1000
     
     discovery_rates = []
+    
+    print(args.fit)
 
     if args.fit:
         for mod in number_of_models:
             print("=======================================")
             print("Evaluating now {} data points".format(mod))
             
-            my_model = New_Model(f1=0.1, f2=0.05, mu_1=5.28, mu_2=5.35, lamda=0.5, sigma=0.018)
+            my_model = Model(f=0.1, lamda=0.5, sigma=0.018, mu=5.28)
             significances = []
             fails_H0 = 0
             fails_H1 = 0
             for i in range(N_datasets):
                 data = my_model.accept_reject(size=mod)
-                nLL_H0 = UnbinnedNLL(data, pdf)
-                mi_H0 = Minuit(nLL_H0, lamda=0.5, f=0.15, mu=5.3, sigma=0.018)
+                nLL_H0 = UnbinnedNLL(data, bkg_pdf)
+                mi_H0 = Minuit(nLL_H0, lamda=0.5)
                 mi_H0.migrad(iterate=10)
                 mi_H0.hesse()
                 
                 mi_H0_min = mi_H0.fval
-                nLL_H1 = UnbinnedNLL(data, pdf_new_model)
-                mi_H1 = Minuit(nLL_H1, mu_1=5.28, f1=0.1, f2=0.05, mu_2=5.35, lamda=0.5, sigma=0.018)
+                nLL_H1 = UnbinnedNLL(data, pdf)
+                mi_H1 = Minuit(nLL_H1, mu=5.28, f=0.1, lamda=0.5, sigma=0.018)
                 mi_H1.migrad(iterate=10)
                 mi_H1.hesse()
                 if mi_H0.valid == False and mi_H1.valid == True:
@@ -228,8 +238,8 @@ def main():
             discovery_rates.append(disc_rate)
         
     else:
-        discovery_rates = np.load("data/discovery_rates_g.npy")
-        
+        discovery_rates = np.load("data/discovery_rates.npy")
+            
     plt.figure(figsize=(15,10))   
     plt.scatter(number_of_models, discovery_rates)
     plt.axhline(y=0.9, c='r', ls='--')
@@ -237,11 +247,11 @@ def main():
     plt.xlabel('Number of points simulated')
     plt.ylabel('Discovery rate')
     plt.xscale('log')
-    plt.savefig('plots/part_g.pdf')
+    plt.savefig('plots/part_f.pdf')
     print("=======================================")
     print('Saving pdf file at plots/part_f.pdf')
     print('Saving np array for future uses')
-    np.save('data/discovery_rates_g.npy', discovery_rates)
+    np.save('data/discovery_rates.npy', discovery_rates)
     for i in range(len(discovery_rates)):
         print("=======================================")    
         print('Number of points = {0}, discovery rate = {1}'.format(number_of_models[i], discovery_rates[i]))    
