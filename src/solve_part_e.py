@@ -32,6 +32,8 @@ def main():
     nLL = UnbinnedNLL(data, pdf)
     mi = Minuit(nLL, mu=5.28, f=0.1, lamda=0.5, sigma=0.018)
     mi.migrad()
+    mi.hesse()
+    print(mi)
     
     hat_f, hat_mu, hat_lamda, hat_sigma = mi.values
     fit_model = Model(f=hat_f, mu=hat_mu, sigma=hat_sigma, lamda=hat_lamda, alpha=my_alpha, beta=my_beta, is_normalised=True)

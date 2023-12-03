@@ -17,22 +17,22 @@ def main():
     parser.add_argument('--plots', help='Flag: if selected, will show all plots, otherwise it will only save them', required=False, action='store_true')
     args = parser.parse_args()
         
-    number_of_models = [50, 100, 200, 500, 750, 1000, 1025, 1050, 1075, 1100, 1250, 1500, 1750, 2000]
+    sizes = [50, 100, 200, 500, 750, 1000, 1025, 1050, 1075, 1100, 1250, 1500, 1750, 2000]
     N_datasets = 1000
     
     discovery_rates = []
 
     if args.fit:
-        for mod in number_of_models:
+        for size in sizes:
             print("=======================================")
-            print("Evaluating now {} data points".format(mod))
+            print("Evaluating now {} data points".format(size))
             
             my_model = Model(f=0.1, lamda=0.5, sigma=0.018, mu=5.28)
             significances = []
             fails_H0 = 0
             fails_H1 = 0
             for i in range(N_datasets):
-                data = my_model.accept_reject(size=mod)
+                data = my_model.accept_reject(size=size)
                 nLL_H0 = UnbinnedNLL(data, bkg_pdf)
                 mi_H0 = Minuit(nLL_H0, lamda=0.5)
                 mi_H0.migrad(iterate=10)
@@ -71,7 +71,7 @@ def main():
         discovery_rates = np.load("data/discovery_rates.npy")
             
     plt.figure(figsize=(15,10))   
-    plt.scatter(number_of_models, discovery_rates)
+    plt.scatter(sizes, discovery_rates)
     plt.axhline(y=0.9, c='r', ls='--')
     plt.title('Discovery rate vs number of points simulated')
     plt.xlabel('Number of points simulated')
@@ -84,7 +84,7 @@ def main():
     np.save('data/discovery_rates.npy', discovery_rates)
     for i in range(len(discovery_rates)):
         print("=======================================")    
-        print('Number of points = {0}, discovery rate = {1}'.format(number_of_models[i], discovery_rates[i]))    
+        print('Number of points = {0}, discovery rate = {1}'.format(sizes[i], discovery_rates[i]))    
     if args.plots:
         plt.show()
         

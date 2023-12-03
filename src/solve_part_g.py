@@ -67,22 +67,22 @@ def main():
     print("=======================================")
     print('Saving pdf file at plots/Part_g/fit.pdf')
     
-    number_of_models = [2000, 3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 10000]
+    sizes = [2000, 3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 10000]
     N_datasets = 1000
     
     discovery_rates = []
 
     if args.fit:
-        for mod in number_of_models:
+        for size in sizes:
             print("=======================================")
-            print("Evaluating now {} data points".format(mod))
+            print("Evaluating now {} data points".format(size))
             
             my_model = New_Model(f1=0.1, f2=0.05, mu_1=5.28, mu_2=5.35, lamda=0.5, sigma=0.018)
             significances = []
             fails_H0 = 0
             fails_H1 = 0
             for i in range(N_datasets):
-                data = my_model.accept_reject(size=mod)
+                data = my_model.accept_reject(size=size)
                 nLL_H0 = UnbinnedNLL(data, pdf)
                 mi_H0 = Minuit(nLL_H0, lamda=0.5, f=0.15, mu=5.3, sigma=0.018)
                 mi_H0.migrad(iterate=10)
@@ -121,7 +121,7 @@ def main():
         discovery_rates = np.load("data/discovery_rates_g.npy")
         
     plt.figure(figsize=(15,10))   
-    plt.scatter(number_of_models, discovery_rates)
+    plt.scatter(sizes, discovery_rates)
     plt.axhline(y=0.9, c='r', ls='--')
     plt.title('Discovery rate vs number of points simulated')
     plt.xlabel('Number of points simulated')
@@ -134,7 +134,7 @@ def main():
     np.save('data/discovery_rates_g.npy', discovery_rates)
     for i in range(len(discovery_rates)):
         print("=======================================")    
-        print('Number of points = {0}, discovery rate = {1}'.format(number_of_models[i], discovery_rates[i]))    
+        print('Number of points = {0}, discovery rate = {1}'.format(sizes[i], discovery_rates[i]))    
     if args.plots:
         plt.show()
 
