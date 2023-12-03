@@ -1,23 +1,12 @@
 #!/usr/bin/env python
-import scipy
-from math import log
-from scipy.integrate import simpson
-from scipy.special import erf
-from scipy.optimize import minimize
-from scipy.stats import norm, expon
-from functools import partial
-from scipy.integrate import quad
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.integrate import cumulative_trapezoid
-from scipy.stats import truncnorm, truncexpon, chi2
+from scipy.stats import chi2
 import argparse
-from scipy.stats.sampling import NumericalInversePolynomial as NIP
-import itertools
-from iminuit.cost import BinnedNLL, UnbinnedNLL
+from iminuit.cost import UnbinnedNLL
 from iminuit import Minuit
 import time
-from Helpers.HelperFunctions import Model, New_Model, pdf, pdf_new_model
+from Helpers.HelperFunctions import New_Model, pdf, pdf_new_model
 
 plt.style.use('mphil.mplstyle')
   
