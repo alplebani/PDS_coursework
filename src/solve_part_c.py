@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import argparse
 import time
-from Helpers.HelperFunctions import Model, pdf, bkg_pdf
+from Helpers.HelperFunctions import Model
 
 plt.style.use('mphil.mplstyle')
 

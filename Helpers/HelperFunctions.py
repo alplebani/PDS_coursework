@@ -1,13 +1,7 @@
 # Helpers/HelperFunctions.py
-import scipy
-from math import log
-from scipy.integrate import simpson
-from scipy.special import erf
-from scipy.optimize import minimize
 from scipy.stats import norm, expon
-from functools import partial
-from scipy.integrate import quad
 import numpy as np
+from scipy.special import erf 
 
 # ===============================================
 # Helper functions for the model distributions
@@ -15,7 +9,7 @@ import numpy as np
 
 class Model():
     '''
-    Statistical model. Contains all functions needed to run the code.
+    Statistical model containing only one signal. Contains all functions needed to run the code.
     '''
     def __init__(self, f, lamda, sigma, mu, alpha=5., beta=5.6, is_normalised=True):
         self.f = f
@@ -58,17 +52,10 @@ class Model():
         '''
         Normalisation factor of the background
         '''
-        if self.alpha >= 0:
+        if self.alpha >= 0: # needed because exponential distribution is defined only for x>= 0
             return np.exp(- self.lamda * self.alpha) - np.exp(-self.lamda * self.beta)
         else: 
             return 1 - np.exp(-self.lamda * self.beta)
-    
-    def norm_factors(self):
-        '''
-        Function that returns the normalisation factors for signal and background pdfs
-        '''
-        
-        return self.N_S(), self.N_B()
     
     def pdf_signal(self, x):
         '''
@@ -94,15 +81,6 @@ class Model():
         else:
             return self.f * self.signal(x) + (1 - self.f) * self.background(x)
         
-    def cdf(self, x):
-        '''
-        Function that returns the cumulative distribution function
-        '''
-        
-        bkg = - np.exp(- self.lamda * self.alpha) + np.exp(- self.lamda * x)
-        sig = 0.5 * (erf((x - self.mu)/(np.sqrt(2) * self.sigma)) - erf((self.alpha - self.mu)/(np.sqrt(2) * self.sigma)))
-        
-        return self.f * sig / self.N_S(x) + (1 - self.f) * bkg / self.N_B(x)
     
     def accept_reject(self, size):
         '''
@@ -117,7 +95,7 @@ class Model():
 
 class New_Model ():
     '''
-    Statistical model. Contains all functions needed to run the code
+    Statistical model containing the two signal distributions. Contains all functions needed to run the code
     '''
     def __init__(self, f1, f2, lamda, sigma, mu_1, mu_2, alpha=5., beta=5.6, is_normalised=True):
         self.f1 = f1
@@ -175,7 +153,7 @@ class New_Model ():
         '''
         Normalisation factor of the background
         '''
-        if self.alpha >= 0:
+        if self.alpha >= 0: # needed because exponential distribution is defined only for x>= 0
             return np.exp(- self.lamda * self.alpha) - np.exp(-self.lamda * self.beta)
         else: 
             return 1 - np.exp(-self.lamda * self.beta)
@@ -211,17 +189,6 @@ class New_Model ():
         else:
             return self.f1 * self.signal_1(x) + self.f2 * self.signal_2(x) + (1 - self.f1 - self.f2) * self.background(x)
         
-    def cdf(self, x):
-        '''
-        Function that returns the cumulative distribution function
-        '''
-        
-        bkg = - np.exp(- self.lamda * self.alpha) + np.exp(- self.lamda * x)
-        sig_1 = 0.5 * (erf((x - self.mu_1)/(np.sqrt(2) * self.sigma)) - erf((self.alpha - self.mu_1)/(np.sqrt(2) * self.sigma)))
-        sig_2 = 0.5 * (erf((x - self.mu_2)/(np.sqrt(2) * self.sigma)) - erf((self.alpha - self.mu_2)/(np.sqrt(2) * self.sigma)))
-        
-        return self.f1 * sig_1 / self.N_S_1(x) + self.f2 * sig_2 / self.N_S_2(x) +  (1 - self.f1 - self.f2) * bkg / self.N_B(x)
-    
     def accept_reject(self, size):
         '''
         Function used to generate data according to the pdf using the accept/reject method
@@ -235,7 +202,7 @@ class New_Model ():
 
 def pdf(x, f, mu, lamda, sigma):
     '''
-    Function that returns the pdf of the model, easier to handle for the fit
+    Function that returns the pdf of the model with one signal, easier to handle for the fit
     '''
     
     model = Model(f=f, mu=mu, lamda=lamda, sigma=sigma)
@@ -253,7 +220,7 @@ def bkg_pdf(x, lamda):
 
 def pdf_new_model(x, f1, f2, mu_1, mu_2, lamda, sigma):
     '''
-    Function that returns the pdf of the model, easier to handle for the fit
+    Function that returns the pdf of the model with two signals, easier to handle for the fit
     '''
     
     model = New_Model(f1=f1, f2=f2, mu_1=mu_1, mu_2=mu_2, lamda=lamda, sigma=sigma)
