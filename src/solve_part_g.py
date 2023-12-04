@@ -67,7 +67,7 @@ def main():
     print("=======================================")
     print('Saving pdf file at plots/Part_g/fit.pdf')
     
-    sizes = [2000, 3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 10000]
+    sizes = [2000, 3000, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8500, 10000]
     N_datasets = 1000
     
     discovery_rates = []
@@ -103,7 +103,7 @@ def main():
                 
                 T = mi_H0_min - mi_H1_min
                 sb_chisq = T
-                sb_ndof = 1
+                sb_ndof = 2 # difference between free parameters of numerator (6) and denominator (4)
                 sb_pval = 1 - chi2.cdf(sb_chisq, sb_ndof)
                 sb_sig = chi2.ppf(1 - sb_pval, 1)**0.5
                 significances.append(sb_sig)

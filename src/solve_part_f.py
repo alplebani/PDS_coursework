@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--plots', help='Flag: if selected, will show all plots, otherwise it will only save them', required=False, action='store_true')
     args = parser.parse_args()
         
-    sizes = [50, 100, 200, 500, 750, 1000, 1025, 1050, 1075, 1100, 1250, 1500, 1750, 2000]
+    sizes = [500, 750, 1000, 1300, 1500, 1600, 1650, 1700, 1750, 2000]
     N_datasets = 1000
     
     discovery_rates = []
@@ -34,13 +34,13 @@ def main():
             for i in range(N_datasets):
                 data = my_model.accept_reject(size=size)
                 nLL_H0 = UnbinnedNLL(data, bkg_pdf)
-                mi_H0 = Minuit(nLL_H0, lamda=0.5)
+                mi_H0 = Minuit(nLL_H0, lamda=0.4)
                 mi_H0.migrad(iterate=10)
                 mi_H0.hesse()
                 
                 mi_H0_min = mi_H0.fval
                 nLL_H1 = UnbinnedNLL(data, pdf)
-                mi_H1 = Minuit(nLL_H1, mu=5.28, f=0.1, lamda=0.5, sigma=0.018)
+                mi_H1 = Minuit(nLL_H1, mu=5.3, f=0.15, lamda=0.4, sigma=0.02)
                 mi_H1.migrad(iterate=10)
                 mi_H1.hesse()
                 if mi_H0.valid == False and mi_H1.valid == True:
@@ -53,7 +53,7 @@ def main():
                 
                 T = mi_H0_min - mi_H1_min
                 sb_chisq = T
-                sb_ndof = 1
+                sb_ndof = 3 # difference between free parameters of numerator (4) and denominator (1)
                 sb_pval = 1 - chi2.cdf(sb_chisq, sb_ndof)
                 sb_sig = chi2.ppf(1 - sb_pval, 1)**0.5
                 significances.append(sb_sig)
@@ -76,7 +76,7 @@ def main():
     plt.title('Discovery rate vs number of points simulated')
     plt.xlabel('Number of points simulated')
     plt.ylabel('Discovery rate')
-    plt.xscale('log')
+    # plt.xscale('log')
     plt.savefig('plots/Part_f/discovery_rates.pdf')
     print("=======================================")
     print('Saving pdf file at plots/Part_f/discovery_rates.pdf')

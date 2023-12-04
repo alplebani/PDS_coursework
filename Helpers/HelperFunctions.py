@@ -86,11 +86,11 @@ class Model():
         '''
         Function used to generate data according to the pdf using the accept/reject method
         '''
-        
-        a = np.random.uniform(0, 1, size)
-        x = np.linspace(self.alpha, self.beta, size)
+    
+        x = np.random.uniform(self.alpha, self.beta, size)
         pdf = self.pdf(x)
-        return x[np.where(a < pdf / np.max(pdf))[0][:size]]
+        a = np.random.uniform(0, np.max(pdf), size)
+        return x[np.where(a < pdf)[0][:size]]
 
 
 class New_Model ():
@@ -194,10 +194,10 @@ class New_Model ():
         Function used to generate data according to the pdf using the accept/reject method
         '''
         
-        a = np.random.uniform(0, 1, size)
-        x = np.linspace(self.alpha, self.beta, size)
+        x = np.random.uniform(self.alpha, self.beta, size)
         pdf = self.pdf(x)
-        return x[np.where(a < pdf / np.max(pdf))[0][:size]]
+        a = np.random.uniform(0, np.max(pdf), size)
+        return x[np.where(a < pdf)[0][:size]]
 
 
 def pdf(x, f, mu, lamda, sigma):
