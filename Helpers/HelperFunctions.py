@@ -17,7 +17,7 @@ class Model():
         self.sigma = sigma
         self.mu = mu
         if alpha >= beta:
-            print('Error! alpha must be greater than beta')
+            print('Error! alpha must be smaller than beta')
             print('Exiting code')
             exit(1)
         else:
@@ -87,10 +87,12 @@ class Model():
         Function used to generate data according to the pdf using the accept/reject method
         '''
     
-        x = np.random.uniform(self.alpha, self.beta, size)
+        x = np.random.uniform(self.alpha, self.beta, 5*size)
         pdf = self.pdf(x)
-        a = np.random.uniform(0, np.max(pdf), size)
-        return x[np.where(a < pdf)[0][:size]]
+        a = np.random.uniform(0, np.max(pdf), 5*size)
+        y = x[np.where(a < pdf)[0][:5*size]]
+        y = y[:size]
+        return y
 
 
 class New_Model ():
@@ -105,7 +107,7 @@ class New_Model ():
         self.mu_1 = mu_1
         self.mu_2 = mu_2
         if alpha >= beta:
-            print('Error! alpha must be greater than beta')
+            print('Error! alpha must be smaller than beta')
             print('Exiting code')
             exit(1)
         else:
@@ -153,7 +155,8 @@ class New_Model ():
         '''
         Normalisation factor of the background
         '''
-        if self.alpha >= 0: # needed because exponential distribution is defined only for x>= 0
+        
+        if self.alpha >= 0: # needed because exponential distribution is defined only for x >= 0
             return np.exp(- self.lamda * self.alpha) - np.exp(-self.lamda * self.beta)
         else: 
             return 1 - np.exp(-self.lamda * self.beta)
@@ -194,10 +197,12 @@ class New_Model ():
         Function used to generate data according to the pdf using the accept/reject method
         '''
         
-        x = np.random.uniform(self.alpha, self.beta, size)
+        x = np.random.uniform(self.alpha, self.beta, 5*size)
         pdf = self.pdf(x)
-        a = np.random.uniform(0, np.max(pdf), size)
-        return x[np.where(a < pdf)[0][:size]]
+        a = np.random.uniform(0, np.max(pdf), 5*size)
+        y = x[np.where(a < pdf)[0][:5*size]]
+        y = y[:size]
+        return y
 
 
 def pdf(x, f, mu, lamda, sigma):
