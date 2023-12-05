@@ -6,6 +6,8 @@ import argparse
 from iminuit.cost import UnbinnedNLL
 from iminuit import Minuit
 import time
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Helpers.HelperFunctions import New_Model, pdf, pdf_new_model
 
 plt.style.use('mphil.mplstyle')
@@ -68,17 +70,19 @@ def main():
     print("=======================================")
     print('Saving pdf file at plots/Part_g/fit.pdf')
     
-    sizes = [2000, 3000, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8500, 10000]
+    sizes = [1000, 1500, 2000, 2500, 2700, 2900, 3000, 3200, 3500, 4000]
     N_datasets = 1000
     
     discovery_rates = []
+    my_model = New_Model(f1=0.1, f2=0.05, mu_1=5.28, mu_2=5.35, lamda=0.5, sigma=0.018)
+    
 
     if args.fit:
+        uncertainties = []
         for size in sizes:
             print("=======================================")
             print("Evaluating now {} data points".format(size))
             
-            my_model = New_Model(f1=0.1, f2=0.05, mu_1=5.28, mu_2=5.35, lamda=0.5, sigma=0.018)
             significances = []
             fails_H0 = 0
             fails_H1 = 0
@@ -106,23 +110,29 @@ def main():
                 sb_chisq = T
                 sb_ndof = 2 # difference between free parameters of numerator (6) and denominator (4)
                 sb_pval = 1 - chi2.cdf(sb_chisq, sb_ndof)
-                sb_sig = chi2.ppf(1 - sb_pval, 1)**0.5
-                significances.append(sb_sig)
+                significances.append(sb_pval)
             
             print("Failed fits for H0 : {}".format(fails_H0))
             print("Failed fits for H1 : {}".format(fails_H1))
-            val_sig = [value for value in significances if value >= 5.0]
+            val_sig = [value for value in significances if value <= 2.9e-7]
             if len(significances) == 0:
                 discovery_rates.append(0)
                 continue
             disc_rate = float(len(val_sig))/(float(len(significances)))
             discovery_rates.append(disc_rate)
+            uncertainties.append(np.sqrt((disc_rate * (1 - disc_rate)) / N_datasets))
+            print("=======================================")
+            print('Number of points = {0}, discovery rate = {1}'.format(size, disc_rate)) 
         
     else:
         discovery_rates = np.load("data/discovery_rates_g.npy")
-        
+        uncertainties = np.sqrt(discovery_rates * (1 - discovery_rates) / float(N_datasets)) # binomial uncertainty
+        for i in range(len(discovery_rates)):
+            print("=======================================")    
+            print('Number of points = {0}, discovery rate = {1}'.format(sizes[i], discovery_rates[i])) 
+    
     plt.figure(figsize=(15,10))   
-    plt.scatter(sizes, discovery_rates)
+    plt.errorbar(sizes, discovery_rates, yerr=uncertainties, fmt='ko')
     plt.axhline(y=0.9, c='r', ls='--')
     plt.title('Discovery rate vs number of points simulated')
     plt.xlabel('Number of points simulated')
@@ -133,9 +143,7 @@ def main():
     print('Saving pdf file at plots/Part_g/discovery_rates.pdf')
     print('Saving np array for future uses')
     np.save('data/discovery_rates_g.npy', discovery_rates)
-    for i in range(len(discovery_rates)):
-        print("=======================================")    
-        print('Number of points = {0}, discovery rate = {1}'.format(sizes[i], discovery_rates[i]))    
+       
     if args.plots:
         plt.show()
 
