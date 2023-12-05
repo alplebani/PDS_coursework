@@ -6,6 +6,8 @@ import argparse
 from iminuit.cost import UnbinnedNLL
 from iminuit import Minuit
 import time
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Helpers.HelperFunctions import New_Model, pdf, pdf_new_model
 
 plt.style.use('mphil.mplstyle')

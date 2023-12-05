@@ -3,6 +3,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import argparse
 import time
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Helpers.HelperFunctions import Model
 
 plt.style.use('mphil.mplstyle')

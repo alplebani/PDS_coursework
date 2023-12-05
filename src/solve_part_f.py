@@ -6,6 +6,8 @@ from iminuit.cost import UnbinnedNLL
 from iminuit import Minuit
 import time
 from scipy.stats import chi2
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Helpers.HelperFunctions import Model, pdf, bkg_pdf
 
 plt.style.use('mphil.mplstyle')
