@@ -48,6 +48,7 @@ def main():
     nLL = UnbinnedNLL(data, pdf_new_model)
     mi = Minuit(nLL, mu_1=5.28, mu_2=5.35, f1=0.1, f2=0.05, lamda=0.5, sigma=0.018)
     mi.migrad()
+    print(mi)
     
     hat_f1, hat_f2, hat_mu1, hat_mu2, hat_lamda, hat_sigma = mi.values
     fit_model = New_Model(f1=hat_f1, f2=hat_f2, mu_1=hat_mu1, mu_2=hat_mu2, sigma=hat_sigma, lamda=hat_lamda, alpha=my_alpha, beta=my_beta, is_normalised=True)
@@ -85,13 +86,13 @@ def main():
                 data = my_model.accept_reject(size=size)
                 nLL_H0 = UnbinnedNLL(data, pdf)
                 mi_H0 = Minuit(nLL_H0, lamda=0.5, f=0.15, mu=5.3, sigma=0.018)
-                mi_H0.migrad(iterate=10)
+                mi_H0.migrad(iterate=100)
                 mi_H0.hesse()
                 
                 mi_H0_min = mi_H0.fval
                 nLL_H1 = UnbinnedNLL(data, pdf_new_model)
                 mi_H1 = Minuit(nLL_H1, mu_1=5.28, f1=0.1, f2=0.05, mu_2=5.35, lamda=0.5, sigma=0.018)
-                mi_H1.migrad(iterate=10)
+                mi_H1.migrad(iterate=100)
                 mi_H1.hesse()
                 if mi_H0.valid == False and mi_H1.valid == True:
                     fails_H0 += 1

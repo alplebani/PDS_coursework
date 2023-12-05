@@ -16,6 +16,8 @@ def main():
     parser.add_argument('-f', '--fit', help='Flag whether you want to re-do the fits in part f) or if you just want to load the data', action='store_true', required=False, default=False)
     parser.add_argument('--plots', help='Flag: if selected, will show all plots, otherwise it will only save them', required=False, action='store_true')
     args = parser.parse_args()
+    
+    np.random.seed(4999)
         
     sizes = [500, 750, 1000, 1300, 1500, 1600, 1650, 1700, 1750, 2000]
     N_datasets = 1000
@@ -35,13 +37,13 @@ def main():
                 data = my_model.accept_reject(size=size)
                 nLL_H0 = UnbinnedNLL(data, bkg_pdf)
                 mi_H0 = Minuit(nLL_H0, lamda=0.4)
-                mi_H0.migrad(iterate=10)
+                mi_H0.migrad(iterate=100)
                 mi_H0.hesse()
                 
                 mi_H0_min = mi_H0.fval
                 nLL_H1 = UnbinnedNLL(data, pdf)
                 mi_H1 = Minuit(nLL_H1, mu=5.3, f=0.15, lamda=0.4, sigma=0.02)
-                mi_H1.migrad(iterate=10)
+                mi_H1.migrad(iterate=100)
                 mi_H1.hesse()
                 if mi_H0.valid == False and mi_H1.valid == True:
                     fails_H0 += 1
