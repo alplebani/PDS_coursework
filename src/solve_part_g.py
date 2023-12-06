@@ -137,7 +137,7 @@ def main():
     plt.title('Discovery rate vs number of points simulated')
     plt.xlabel('Number of points simulated')
     plt.ylabel('Discovery rate')
-    plt.xscale('log')
+    # plt.xscale('log')
     plt.savefig('plots/Part_g/discovery_rates.pdf')
     print("=======================================")
     print('Saving pdf file at plots/Part_g/discovery_rates.pdf')
